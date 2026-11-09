@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digiturno · Demo</title>
+<meta name="description" content="Prototipo demostrable del sistema de turnos de la Clínica Boyacá: tótem, recepción y pantalla TV con anuncio por voz.">
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body data-view="inicio">
+
+<header class="top">
+  <a class="brand" href="#inicio">
+    <img src="logo.png" alt="" onerror="this.remove()">
+    <div><strong>Digiturno</strong><span>Clínica Boyacá</span></div>
+  </a>
+  <nav class="tabs" id="tabs" aria-label="Vistas"></nav>
+  <span class="demo-badge">Modo demo</span>
+</header>
+
+<main>
+  <section id="v-inicio" class="view"></section>
+  <section id="v-totem" class="view pane">
+    <div class="pane-head"><b>1</b> Tótem del paciente</div>
+    <div class="pane-box" id="totem"></div>
+  </section>
+  <section id="v-recepcion" class="view pane">
+    <div class="pane-head"><b>2</b> Recepción / ventanilla</div>
+    <div class="pane-box" id="recepcion"></div>
+  </section>
+  <section id="v-tv" class="view pane">
+    <div class="pane-head"><b>3</b> Pantalla TV de la sala</div>
+    <div class="pane-box" id="tv"></div>
+  </section>
+</main>
+
+<div id="modal" class="overlay" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="ticket-print"></div>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>
