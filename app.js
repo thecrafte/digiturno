@@ -1,9 +1,3 @@
-/* =====================================================================
-   Digiturno · prototipo sin servidor
-   Los datos viven en localStorage y se sincronizan entre pestañas del
-   mismo navegador (evento "storage"). Así se puede abrir la Pantalla TV
-   en otra pestaña/monitor y la Recepción en otra.
-   ===================================================================== */
 
 const ICONS = {
   ambulance:'<path d="M10 10H6"/><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 1-.578-.502l-1.539-3.076A1 1 0 0 0 16.382 8H14"/><path d="M8 8v4"/><path d="M9 18h6"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
@@ -39,7 +33,7 @@ const ICONS = {
 };
 const ic = (n, cls='') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
 
-// Mismas áreas y ventanillas que database/install.sql
+
 const AREAS = [
   {id:1, nombre:'Urgencias',              prefijo:'URG', color:'#e74c3c', icono:'ambulance',     ventanillas:3},
   {id:2, nombre:'Radiología',             prefijo:'RAD', color:'#8e44ad', icono:'scan',          ventanillas:3},
@@ -50,7 +44,6 @@ const AREAS = [
 ];
 const area = id => AREAS.find(a => a.id === +id);
 
-/* ---------- Almacenamiento ---------- */
 const KEY = 'digiturno-demo-v1';
 const hoy = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const nuevoEstado = () => ({fecha:hoy(), seq:0, contadores:{}, turnos:[]});
@@ -69,7 +62,7 @@ const ses = {
 let state = cargar();
 window.addEventListener('storage', e => { if (e.key === KEY) { state = cargar(); render(); } });
 
-/* ---------- Reglas del turnero ---------- */
+/*Reglas */
 const ACTIVOS = ['llamado','atencion'];
 function crearTurno(areaId, tipo, creado = Date.now()){
   const a = area(areaId);
@@ -80,7 +73,7 @@ function crearTurno(areaId, tipo, creado = Date.now()){
   state.turnos.push(t);
   return t;
 }
-// Preferenciales primero, luego por orden de llegada
+
 const cola = areaId => state.turnos.filter(t => t.areaId === +areaId && t.estado === 'espera')
   .sort((a,b) => (a.tipo === b.tipo ? 0 : a.tipo === 'preferencial' ? -1 : 1) || a.creado - b.creado);
 const actualDe = (areaId, num) => state.turnos.find(t => t.areaId === +areaId && t.ventanilla === +num && ACTIVOS.includes(t.estado));
@@ -104,7 +97,6 @@ function marcarLlamado(t, num){
   if (!t.primerLlamado) t.primerLlamado = now;
 }
 
-/* ---------- Utilidades ---------- */
 const hace = ts => { const m = Math.floor((Date.now() - ts) / 60000); if (m < 1) return 'ahora'; if (m < 60) return `${m} min`; return `${Math.floor(m/60)} h ${m%60} min`; };
 const hora = ts => new Date(ts).toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
 let toastT;
@@ -115,7 +107,7 @@ function cerrarModal(){ clearTimeout(modalT); const m = document.getElementById(
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') cerrarModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
 
-/* ---------- Navegación ---------- */
+/* Naevgación */
 const RUTAS = [
   ['inicio','home','Inicio'], ['totem','ticket','Tótem'], ['recepcion','headset','Recepción'],
   ['tv','monitor','Pantalla TV'], ['todo','layout','Todo junto']
@@ -131,9 +123,6 @@ function leerRuta(){
 document.getElementById('tabs').innerHTML = RUTAS.map(([r,i,t]) => `<a href="#${r}" data-r="${r}">${ic(i)}<span>${t}</span></a>`).join('');
 window.addEventListener('hashchange', leerRuta);
 
-/* =====================================================================
-   VISTAS
-   ===================================================================== */
 function vInicio(){
   const s = stats();
   return `
@@ -257,7 +246,6 @@ function vRecepcion(){
   </div>`;
 }
 
-/* ---------- Pantalla TV ---------- */
 function tvArea(){ return +(ses.get('dt-tv-area') || 0); }
 function turnosTV(){
   const f = tvArea();
@@ -313,7 +301,6 @@ function reloj(){
   document.querySelectorAll('.js-fecha').forEach(el => el.textContent = d.toLocaleDateString('es-CO', {weekday:'long', day:'numeric', month:'long'}));
 }
 
-/* ---------- Voz y sonido ---------- */
 let voz = null, actx = null;
 function elegirVoz(){
   if (!('speechSynthesis' in window)) return;
@@ -338,7 +325,6 @@ function campana(){
     });
   } catch(e){}
 }
-// "URG-005" -> "Turno U R G, 0 0 5. Diríjase a Urgencias, ventanilla 2"
 function textoAnuncio(t){
   const [p, n] = t.numero.split('-');
   return `Turno ${p.split('').join(' ')}, ${n.split('').join(' ')}. Diríjase a ${area(t.areaId).nombre}, ventanilla ${t.ventanilla}`;
@@ -354,7 +340,6 @@ function anunciar(t){
   campana();
   setTimeout(() => hablar(textoAnuncio(t)), 900);
 }
-// Detecta llamados nuevos o repetidos comparando el contador "llamados"
 const vistos = new Map();
 function revisarAnuncios(){
   if (ruta !== 'tv' && ruta !== 'todo') return;
@@ -367,7 +352,7 @@ function revisarAnuncios(){
   });
 }
 
-/* ---------- Render ---------- */
+
 function render(){
   document.getElementById('v-inicio').innerHTML = vInicio();
   document.getElementById('totem').innerHTML = vTotem();
@@ -377,9 +362,8 @@ function render(){
   revisarAnuncios();
 }
 
-/* =====================================================================
-   ACCIONES
-   ===================================================================== */
+/*Aciones*/
+
 function conTurnoActual(fn){
   return () => {
     const s = sesion(); if (!s) return;
@@ -515,4 +499,4 @@ document.addEventListener('pointerdown', function primero(){
 
 leerRuta();
 setInterval(reloj, 1000);
-setInterval(render, 20000); // refresca "hace X min"
+setInterval(render, 20000); 
