@@ -62,7 +62,7 @@ const ses = {
 let state = cargar();
 window.addEventListener('storage', e => { if (e.key === KEY) { state = cargar(); render(); } });
 
-/*Reglas */
+/*Regla */
 const ACTIVOS = ['llamado','atencion'];
 function crearTurno(areaId, tipo, creado = Date.now()){
   const a = area(areaId);
